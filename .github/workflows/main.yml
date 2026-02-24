@@ -1,15 +1,11 @@
-name: NXT Data Scraper
-
+name: NXT Telegram Bot
 on:
   schedule:
-    - cron: '5 11 * * 1-5' # 평일 한국시간 20:05
-  workflow_dispatch:      # 수동 실행 버튼
-
+    - cron: '5 11 * * 1-5'
+  workflow_dispatch:
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write     # 파일 쓰기 권한 부여
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-python@v4
@@ -17,14 +13,40 @@ jobs:
           python-version: '3.9'
       - name: Install dependencies
         run: |
-          pip install playwright
+          pip install playwright requests
           playwright install chromium
       - name: Run Scraper
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
         run: python scraper.py
-      - name: Commit and Push
-        run: |
-          git config --global user.name "Scraper-Bot"
-          git config --global user.email "actions@github.com"
-          git add nxt_market_data.csv
-          git commit -m "Update: $(date)" || exit 0
-          git push
+# name: NXT Data Scraper
+
+# on:
+#   schedule:
+#     - cron: '5 11 * * 1-5' # 평일 한국시간 20:05
+#   workflow_dispatch:      # 수동 실행 버튼
+
+# jobs:
+#   scrape:
+#     runs-on: ubuntu-latest
+#     permissions:
+#       contents: write     # 파일 쓰기 권한 부여
+#     steps:
+#       - uses: actions/checkout@v3
+#       - uses: actions/setup-python@v4
+#         with:
+#           python-version: '3.9'
+#       - name: Install dependencies
+#         run: |
+#           pip install playwright
+#           playwright install chromium
+#       - name: Run Scraper
+#         run: python scraper.py
+#       - name: Commit and Push
+#         run: |
+#           git config --global user.name "Scraper-Bot"
+#           git config --global user.email "actions@github.com"
+#           git add nxt_market_data.csv
+#           git commit -m "Update: $(date)" || exit 0
+#           git push
