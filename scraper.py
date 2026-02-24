@@ -6,31 +6,48 @@ import os
 async def run():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
-        page = await browser.new_page()
-        # 사이트 접속
-        await page.goto("https://www.nextrade.co.kr/menu/marketData/menuList.do")
-        # 데이터가 나타날 때까지 최대 10초 대기
-        await page.wait_for_selector("#kospiAccTrval", timeout=10000)
+        # 사람처럼 보이게 설정
+        context = await browser.new_context(
+            user_agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36"
+        )
+        page = await context.new_page()
         
-        # 데이터 추출
-        kospi_val = await page.inner_text("#kospiAccTrval")
-        kosdaq_val = await page.inner_text("#kosdaqAccTrval")
-        
-        now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-        # 쉼표 제거 및 데이터 정리
-        data_line = f"{now}, {kospi_val.replace(',', '')}, {kosdaq_val.replace(',', '')}\n"
-        
-        # 파일 저장
-        file_path = "nxt_market_data.csv"
-        if not os.path.exists(file_path):
-            with open(file_path, "w", encoding="utf-8") as f:
-                f.write("Date, KOSPI_Value, KOSDAQ_Value\n")
-        
-        with open(file_path, "a", encoding="utf-8") as f:
-            f.write(data_line)
+        try:
+            print("페이지 접속 중...")
+            await page.goto("https://www.nextrade.co.kr/menu/marketData/menuList.do", wait_until="networkidle")
             
-        print(f"Success: {data_line}")
-        await browser.close()
+            # [수정 포인트] 'visible' 상태가 아니더라도 HTML에 존재(attached)하면 통과
+            print("데이터 탐색 중...")
+            await page.wait_for_selector("#kospiAccTrval", state="attached", timeout=30000)
+            
+            # 숨겨진 텍스트도 가져올 수 있는 text_content() 사용
+            kospi_val = await page.locator("#kospiAccTrval").text_content()
+            kosdaq_val = await page.locator("#kosdaqAccTrval").text_content()
+            
+            # 공백 및 쉼표 제거
+            kospi_clean = kospi_val.strip().replace(',', '')
+            kosdaq_clean = kosdaq_val.strip().replace(',', '')
+            
+            now = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+            data_line = f"{now}, {kospi_clean}, {kosdaq_clean}\n"
+            
+            # 파일 저장
+            file_path = "nxt_market_data.csv"
+            header = "Date, KOSPI_Value, KOSDAQ_Value\n"
+            file_exists = os.path.isfile(file_path)
+            
+            with open(file_path, "a", encoding="utf-8") as f:
+                if not file_exists:
+                    f.write(header)
+                f.write(data_line)
+            
+            print(f"성공적으로 데이터를 수집했습니다: {data_line}")
+
+        except Exception as e:
+            print(f"에러 발생: {e}")
+            raise e
+        finally:
+            await browser.close()
 
 if __name__ == "__main__":
     asyncio.run(run())
