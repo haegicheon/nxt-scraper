@@ -1,7 +1,7 @@
 name: NXT Telegram Bot
 on:
   schedule:
-    - cron: '5 11 * * 1-5'
+    - cron: '35 10 * * 1-5'
   workflow_dispatch:
 jobs:
   scrape:
