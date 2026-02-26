@@ -9,13 +9,27 @@ TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 
 
 def send_telegram_message(message):
+# 1. 토큰이 제대로 들어왔는지 먼저 확인
+    if not TELEGRAM_TOKEN or not CHAT_ID:
+        print("❌ 오류: 깃허브 Secrets에 토큰이나 ID가 설정되지 않았습니다.")
+        return
+
     url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
     payload = {
-        "chat_id": TELEGRAM_CHAT_ID,
+        "chat_id": CHAT_ID,
         "text": message,
-        "parse_mode": "HTML" # HTML 태그를 사용해 굵게 표현 가능
+        "parse_mode": "HTML"
     }
-    requests.post(url, json=payload)
+    
+    # 2. 전송 시도 후 결과 받기
+    response = requests.post(url, json=payload)
+    
+    # 3. 결과 출력 (GitHub Actions 로그에서 확인 가능)
+    if response.status_code == 200:
+        print("✅ 텔레그램 전송 성공!")
+    else:
+        print(f"❌ 전송 실패! 상태 코드: {response.status_code}")
+        print(f"❌ 에러 내용: {response.text}") # 텔레그램이 보내준 에러 메시지 출력
 
 # 스크래핑 대상
 codes = ["KOSPI", "KOSDAQ"]
