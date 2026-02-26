@@ -3,7 +3,7 @@ name: Daily Stock To Telegram
 on:
   schedule:
     # 매일 한국 시간 오전 9시 5분 (UTC 00:05)
-    - cron: '5 0 * * *'
+    - cron: '30 7 * * *'
   workflow_dispatch: # 수동으로 실행하고 싶을 때 버튼 생성
 
 jobs:
