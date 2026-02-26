@@ -10,7 +10,7 @@ TELEGRAM_CHAT_ID = os.environ.get('TELEGRAM_CHAT_ID')
 
 def send_telegram_message(message):
 # 1. 토큰이 제대로 들어왔는지 먼저 확인
-    if not TELEGRAM_TOKEN or not CHAT_ID:
+    if not TELEGRAM_TOKEN or not TELEGRAM_CHAT_ID:
         print("❌ 오류: 깃허브 Secrets에 토큰이나 ID가 설정되지 않았습니다.")
         return
 
