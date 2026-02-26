@@ -59,9 +59,25 @@ for code in codes:
         amount_trillion = round(int(amount_raw) / 1000000, 1)
 
         investors = soup.select('dl.lst_kos_info dd.dd')
-        inv_dict = {item.get_text(separator="|").split("|")[0].strip(): 
-                    item.find('span').get_text(strip=True) for item in investors[:3]}
-
+        # inv_dict = {item.get_text(separator="|").split("|")[0].strip(): 
+        #             item.find('span').get_text(strip=True) for item in investors[:3]}
+        inv_dict = {}
+        
+        for item in investors[:3]:
+            # '개인', '외국인' 등 이름 추출
+            name = item.get_text(separator="|").split("|")[0].strip()
+            
+            # 수치 추출 (예: '+12,555억' -> '+12.56조')
+            raw_val = item.find('span').get_text(strip=True) if item.find('span') else "0"
+            
+            try:
+                # 콤마와 '억' 글자 제거 후 숫자로 변환
+                clean_num = float(raw_val.replace(',', '').replace('억', ''))
+                # 1000으로 나눠서 조 단위로 변환 (부호 살리고 소수점 2자리까지)
+                trillion_val = f"{clean_num / 1000:+.2f}조"
+                inv_dict[name] = trillion_val
+            except:
+                inv_dict[name] = raw_val # 변환 실패 시 원본 표시
         # 보고서 문구 생성
         final_report += f"<b>[{market_name}]</b> {rate}{status} {amount_trillion}조\n"
         final_report += f"👤개인 {inv_dict.get('개인')} 👽외인 {inv_dict.get('외국인')} 🏛기관 {inv_dict.get('기관')}\n"
