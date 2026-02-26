@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import os
 
 # 텔레그램 설정 (본인의 정보를 입력하세요)
 TELEGRAM_TOKEN = os.environ.get('TELEGRAM_TOKEN')
