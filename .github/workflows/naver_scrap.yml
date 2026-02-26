@@ -1,64 +1,25 @@
-name: Naver Finance Scraper
+name: Daily Stock To Telegram
 
 on:
   schedule:
-    # 한국 시간 기준 월~금 오후 4시 30분 (UTC 07:30)
-    - cron: '30 7 * * 1-5'
-  workflow_dispatch: # 수동 실행 버튼
-
-# --- [추가 1] 파일을 쓰기 위해 필요한 권한 설정 ---
-permissions:
-  contents: write
+    # 매일 한국 시간 오전 9시 5분 (UTC 00:05)
+    - cron: '5 0 * * *'
+  workflow_dispatch: # 수동으로 실행하고 싶을 때 버튼 생성
 
 jobs:
-  scrape:
+  build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - uses: actions/setup-python@v4
+      - name: Set up Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.9'
       - name: Install dependencies
         run: |
-          pip install playwright requests
-          playwright install chromium
-      - name: Run Scraper
+          pip install requests beautifulsoup4
+      - name: Run Script
         env:
           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-        run: python scraper_naver.py
-
-      # --- [추가 2] 생성된 파일을 저장소에 커밋하고 푸시하는 단계 ---
-      - name: Commit and Push changes
-        run: |
-          git config --local user.email "github-actions[bot]@users.noreply.github.com"
-          git config --local user.name "github-actions[bot]"
-          git add market_report.txt market_history.csv || echo "추가할 파일 없음"
-          git commit -m "데이터 업데이트: $(date +'%Y-%m-%d %H:%M:%S')" || echo "변경사항 없음"
-          git push
-# name: Naver Finance Scraper
-
-# on:
-#   schedule:
-#     # 한국 시간 기준 월~금 오후 4시 30분 (UTC 07:30)
-#     - cron: '30 7 * * 1-5'
-#   workflow_dispatch: # 수동 실행 버튼
-
-# jobs:
-#   scrape:
-#     runs-on: ubuntu-latest
-#     steps:
-#       - uses: actions/checkout@v3
-#       - uses: actions/setup-python@v4
-#         with:
-#           python-version: '3.9'
-#       - name: Install dependencies
-#         run: |
-#           pip install playwright requests
-#           playwright install chromium
-#       - name: Run Scraper
-#         env:
-#           # 이미 등록하신 Secrets를 그대로 사용합니다.
-#           TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
-#           TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
-#         run: python scraper_naver.py
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python your_script_name.py # 내 파이썬 파일 이름으로 수정
